@@ -12,7 +12,7 @@ var Tetris = function(){
 		wP = 10,
 		width  = sqW * wP,
 	    height = sqH * hP,
-	    to = 400,
+	    to = 1000,
 	    self = this,
 	    figures = [];
 	
@@ -138,7 +138,7 @@ var Tetris = function(){
 					for (var k = tmpY[i] + shift; k > shift; k--){
 						for (var j = 0; j < wP; j++){
 							if (pMat[j][k - 1]){
-								pMat[j][k - 1].transition().attr("y", k * sqH);
+								pMat[j][k - 1].transition().delay(10).duration(20).attr("y", k * sqH);
 								pMat[j][k] = pMat[j][k - 1];
 							} else {
 								pMat[j][k] = undefined;
@@ -227,25 +227,21 @@ var Tetris = function(){
 	 * Move piece depend of action
 	 */
 	this.move = function(keyCode){
+		
 		if (!activeP.coord) return;
 		switch (keyCode){
 			case 38:	//UP
-				clearInterval(interval);
-				
+				//clearInterval(interval);
+				unPause();
 				(function(){
-					var t = hP, b = 0, l = wP, r = 0;
 					var tmpCoord = [];
 					for (var i = 0; i < 4; i++){
 						tmpCoord[i] = [];
 						tmpCoord[i][0] = activeP.coord[i][0] + rotations[activeP.tp][activeP.pos][i][0];
 						tmpCoord[i][1] = activeP.coord[i][1] + rotations[activeP.tp][activeP.pos][i][1];
 
-						if (tmpCoord[i][0] < 0 || tmpCoord[i][0] > wP || tmpCoord[i][1] < 0 || tmpCoord[i][0] > hP || pMat[tmpCoord[i][0]][tmpCoord[i][1]]) return ;
-						
-						if (tmpCoord[i][0] > r) r = tmpCoord[i][0];
-						if (tmpCoord[i][0] < l) l = tmpCoord[i][0];
-						if (tmpCoord[i][1] < t) t = tmpCoord[i][1];
-						if (tmpCoord[i][1] > b) b = tmpCoord[i][1];
+						if (tmpCoord[i][0] < 0 || tmpCoord[i][0] > wP || tmpCoord[i][1] < 0 || tmpCoord[i][0] > hP || pMat[tmpCoord[i][0]] == undefined || pMat[tmpCoord[i][0]][tmpCoord[i][1]]) return ;
+					
 					}
 					
 					for (var i = 0; i < 4; i++){
@@ -253,20 +249,19 @@ var Tetris = function(){
 						activeP.coord[i][0] = tmpCoord[i][0];
 						activeP.coord[i][1] = tmpCoord[i][1];
 						
-						activeP.rect[i].transition().attr("x", tmpCoord[i][0] * sqH)
-						.attr("y", tmpCoord[i][1] * sqH);
+						activeP.rect[i].transition().delay(10).duration(20).attr("x", tmpCoord[i][0] * sqH).attr("y", tmpCoord[i][1] * sqH);
 					}
 					activeP.pos = (activeP.pos + 1) % 4;
 				})();
 				
-				runPiece();
+				//runPiece();
 				break;
+			case 32:	//SPACE
 			case 40:	//DOWN
-				clearInterval(interval);
 				runPiece(0);
 				break;
 			case 37:	//LEFT
-				
+				unPause()
 				var tmpCoord = [];
 				for (var i = 0; i < 4; i++){
 					tmpCoord[i] = [];
@@ -277,14 +272,15 @@ var Tetris = function(){
 					}
 				}
 				
-				clearInterval(interval);
+				//clearInterval(interval);
 				for (var i = 0; i < 4; i++){
 					activeP.coord[i][0] = tmpCoord[i][0];
-					activeP.rect[i].transition().attr("x", activeP.coord[i][0] * sqH);
+					activeP.rect[i].transition().delay(to / 8).duration(to / 6).attr("x", activeP.coord[i][0] * sqW).attr("y", activeP.coord[i][1] * sqH);
 				}
-				runPiece();
+				//runPiece();
 				break;
 			case 39:	//RIGHT
+				unPause()
 				var tmpCoord = [];
 				for (var i = 0; i < 4; i++){
 					tmpCoord[i] = [];
@@ -295,23 +291,29 @@ var Tetris = function(){
 					}
 				}
 				
-				clearInterval(interval);
+				//clearInterval(interval);
 				for (var i = 0; i < 4; i++){
 					activeP.coord[i][0] = tmpCoord[i][0];
-					activeP.rect[i].transition().attr("x", activeP.coord[i][0] * sqH);
+					activeP.rect[i].transition().delay(to / 8).duration(to / 6).attr("x", activeP.coord[i][0] * sqW).attr("y", activeP.coord[i][1] * sqH);
 				}
-				runPiece();
+				//runPiece();
 				break;
 			case 80:	//Pause
-				if (pause){
-					runPiece();
-					pause = false;
-				} else {
+				if (!unPause()){
 					clearInterval(interval);
 					pause = true;
 				}
 				break;
 		}
+	}
+	
+	function unPause(){
+		if (pause){
+			runPiece();
+			pause = false;
+			return true;
+		}
+		return false;
 	}
 	
 	/**
@@ -320,6 +322,8 @@ var Tetris = function(){
 	 * @returns
 	 */
 	function runPiece(timeout){
+		pause = false;
+		clearInterval(interval);
 		if (timeout == undefined) timeout = to;
 		interval = setInterval(function(){
 			
@@ -335,7 +339,7 @@ var Tetris = function(){
 			}
 			for (var i = 0; i < 4; i++){
 				activeP.coord[i][1] = tmpCoord[i][1];
-				activeP.rect[i].transition().attr("y", activeP.coord[i][1] * sqH);
+				activeP.rect[i].transition().delay(timeout / 4).duration(timeout / 2).attr("y", activeP.coord[i][1] * sqH).attr("x", activeP.coord[i][0] * sqW);
 			}
 		}, timeout);
 	}
