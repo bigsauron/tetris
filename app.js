@@ -1,6 +1,7 @@
-var Tetris = function(){
+var Tetris = function(parentEl){
 	/********************************************* DEFINITION ********************************************************************************/
 	var activeP, 
+		active, 
 		pause, 
 		nextP, 
 		svgPreview, 
@@ -14,14 +15,18 @@ var Tetris = function(){
 		hP = 20,
 		width  = sqW * wP,
 	    height = sqH * hP,
-	    score = 0,
-	    level = 0,
-	    totalCleared = 0,
+	    score,
+	    level,
+	    totalCleared,
 	    to = 1000,
 	    self = this,
 	    figures = [];
 	
 	var pMat = [];
+	
+	if (parentEl == undefined){
+		parentEl = 'body';
+	}
 	
 	var dispatch = d3.dispatch("finished");
 	
@@ -81,9 +86,6 @@ var Tetris = function(){
 	
 	
 	
-	for (var i = 0; i < wP; i++){
-		pMat[i] = new Array(hP);
-	}
 	
 	
 	/************************************************** FUNCTIONS *************************************************************************************/
@@ -92,27 +94,28 @@ var Tetris = function(){
 	 * Main function
 	 */
 	this.main = function(){
-		svg = d3.select('body')
+		
+		
+		svg = d3.select(parentEl)
 			.append('svg')
 			.attr('id', 'tetris')
 			.attr('width', width)
 			.attr('height', height);
 		
-		svgPreview = d3.select('body')
+		svgPreview = d3.select(parentEl)
 			.append('svg')
 			.attr('id', 'preview')
 			.attr('width', 130)
 			.attr('height', 70);
-		scoreEl = d3.select('body')
+		scoreEl = d3.select(parentEl)
 			.append('div')
-			.attr('id', 'score')
-			.text(score)
+			.attr('id', 'score');
 		
-		levelEl = d3.select('body')
+		levelEl = d3.select(parentEl)
 			.append('div')
-			.attr('id', 'level')
-			.text(level)
+			.attr('id', 'level');
 			
+		this.resetAll();
 			
 		for (var i = 0; i < wP; i++){
 			for (var k = 0; k < hP; k++){
@@ -127,11 +130,6 @@ var Tetris = function(){
 					.attr("height", sqH);
 			}
 		}
-		
-			
-		
-		this.drawP(figures[Math.floor(Math.random() * figures.length)]) && runPiece();
-		
 		
 		d3.select('body').on('keydown', function(){
 			self.move(d3.event.keyCode);
@@ -221,6 +219,28 @@ var Tetris = function(){
 	}
 	
 	/**
+	 * reset everything
+	 */
+	this.resetAll = function(){
+		clearInterval(interval);
+		for (var i = 0; i < wP; i++){
+			pMat[i] = new Array(hP);
+		}
+		svg.selectAll('rect.piece').remove();
+		svgPreview.selectAll('rect').remove();
+		nextP = undefined;
+		score = 0;
+	    level = 0;
+	    totalCleared = 0;
+	    activeP = {};
+	    scoreEl.text(score);
+	    levelEl.text(level);
+	    active = true;
+	    this.drawP(figures[Math.floor(Math.random() * figures.length)]) && runPiece();
+	    runPiece();
+	}
+	
+	/**
 	 * Draw piece
 	 * @param f
 	 * returns boolean
@@ -254,6 +274,7 @@ var Tetris = function(){
 		
 		for (var i = 0; i < f.coord.length; i++){
 			var rectangle = svg.append("rect")
+				.attr('class','piece')
 				.attr("x", f.coord[i][0] * sqW)
 				.attr("y", f.coord[i][1] * sqH)
 				.attr("stroke", 'black')
@@ -269,6 +290,7 @@ var Tetris = function(){
 		
 		for (var i = 0; i < f.coord.length; i++){
 			if (pMat[f.coord[i][0]][f.coord[i][1]]){
+				active = false;
 				alert('Game Over');
 				return false;
 			}
@@ -289,6 +311,7 @@ var Tetris = function(){
 		if (!activeP.coord) return;
 		switch (keyCode){
 			case 38:	//UP
+				if (!active) return;
 				unPause();
 				(function(){
 					var tmpCoord = [];
@@ -314,9 +337,11 @@ var Tetris = function(){
 				break;
 			case 32:	//SPACE
 			case 40:	//DOWN
+				if (!active) return;
 				runPiece(0);
 				break;
 			case 37:	//LEFT
+				if (!active) return;
 				unPause()
 				var tmpCoord = [];
 				for (var i = 0; i < 4; i++){
@@ -334,6 +359,7 @@ var Tetris = function(){
 				}
 				break;
 			case 39:	//RIGHT
+				if (!active) return;
 				unPause()
 				var tmpCoord = [];
 				for (var i = 0; i < 4; i++){
@@ -351,10 +377,14 @@ var Tetris = function(){
 				}
 				break;
 			case 80:	//Pause
+				if (!active) return;
 				if (!unPause()){
 					clearInterval(interval);
 					pause = true;
 				}
+				break;
+			case 113:	//F2
+				this.resetAll();
 				break;
 		}
 	}
