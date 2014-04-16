@@ -4,14 +4,19 @@ var Tetris = function(){
 		pause, 
 		nextP, 
 		svgPreview, 
+		scoreEl, 
+		levelEl, 
 		svg, 
 		interval,
 		sqW = 30,
 		sqH = 30,
-		hP = 20,
 		wP = 10,
+		hP = 20,
 		width  = sqW * wP,
 	    height = sqH * hP,
+	    score = 0,
+	    level = 0,
+	    totalCleared = 0,
 	    to = 1000,
 	    self = this,
 	    figures = [];
@@ -80,6 +85,7 @@ var Tetris = function(){
 		pMat[i] = new Array(hP);
 	}
 	
+	
 	/************************************************** FUNCTIONS *************************************************************************************/
 	
 	/**
@@ -97,6 +103,32 @@ var Tetris = function(){
 			.attr('id', 'preview')
 			.attr('width', 130)
 			.attr('height', 70);
+		scoreEl = d3.select('body')
+			.append('div')
+			.attr('id', 'score')
+			.text(score)
+		
+		levelEl = d3.select('body')
+			.append('div')
+			.attr('id', 'level')
+			.text(level)
+			
+			
+		for (var i = 0; i < wP; i++){
+			for (var k = 0; k < hP; k++){
+				svg.append("rect")
+					.attr("x", i * sqW)
+					.attr("y", k * sqH)
+					.attr("stroke", 'black')
+					.attr("stroke-width", 0.1)
+					.attr("stroke-opacity", 0.3)
+					.attr("fill-opacity", 0)
+					.attr("width", sqW)
+					.attr("height", sqH);
+			}
+		}
+		
+			
 		
 		this.drawP(figures[Math.floor(Math.random() * figures.length)]) && runPiece();
 		
@@ -154,10 +186,36 @@ var Tetris = function(){
 
 				}
 			}
+			if (shift){
+				var points;
+				switch(shift){
+					case 1:
+						points = 40;
+						break;
+					case 2:
+						points = 100;
+						break;
+					case 3:
+						points = 300;
+						break;
+					case 4:
+						points = 1200;
+						break;
+				}
+				totalCleared += shift;
+				
+				if (totalCleared > (level + 1) * 10){
+					level++;
+					levelEl.text(level);
+				}
+				
+				score += points * (level + 1);
+				scoreEl.text(score);
+			}
+			
 			activeP = {};
 			//Start new piece
 			self.drawP(figures[Math.floor(Math.random() * figures.length)]) && runPiece();
-			//self.drawP(figures[0]) && runPiece();
 			
 		});
 	}
@@ -231,7 +289,6 @@ var Tetris = function(){
 		if (!activeP.coord) return;
 		switch (keyCode){
 			case 38:	//UP
-				//clearInterval(interval);
 				unPause();
 				(function(){
 					var tmpCoord = [];
@@ -240,7 +297,7 @@ var Tetris = function(){
 						tmpCoord[i][0] = activeP.coord[i][0] + rotations[activeP.tp][activeP.pos][i][0];
 						tmpCoord[i][1] = activeP.coord[i][1] + rotations[activeP.tp][activeP.pos][i][1];
 
-						if (tmpCoord[i][0] < 0 || tmpCoord[i][0] > wP || tmpCoord[i][1] < 0 || tmpCoord[i][0] > hP || pMat[tmpCoord[i][0]] == undefined || pMat[tmpCoord[i][0]][tmpCoord[i][1]]) return ;
+						if (tmpCoord[i][0] < 0 || tmpCoord[i][0] > wP || tmpCoord[i][0] > hP || pMat[tmpCoord[i][0]] == undefined || pMat[tmpCoord[i][0]][tmpCoord[i][1]]) return ;
 					
 					}
 					
@@ -249,12 +306,11 @@ var Tetris = function(){
 						activeP.coord[i][0] = tmpCoord[i][0];
 						activeP.coord[i][1] = tmpCoord[i][1];
 						
-						activeP.rect[i].transition().delay(10).duration(20).attr("x", tmpCoord[i][0] * sqH).attr("y", tmpCoord[i][1] * sqH);
+						activeP.rect[i].transition().delay(0).duration(20).attr("x", tmpCoord[i][0] * sqH).attr("y", tmpCoord[i][1] * sqH);
 					}
 					activeP.pos = (activeP.pos + 1) % 4;
 				})();
 				
-				//runPiece();
 				break;
 			case 32:	//SPACE
 			case 40:	//DOWN
@@ -272,12 +328,10 @@ var Tetris = function(){
 					}
 				}
 				
-				//clearInterval(interval);
 				for (var i = 0; i < 4; i++){
 					activeP.coord[i][0] = tmpCoord[i][0];
-					activeP.rect[i].transition().delay(to / 8).duration(to / 6).attr("x", activeP.coord[i][0] * sqW).attr("y", activeP.coord[i][1] * sqH);
+					activeP.rect[i].transition().delay(0).duration(to / 6).attr("x", activeP.coord[i][0] * sqW).attr("y", activeP.coord[i][1] * sqH);
 				}
-				//runPiece();
 				break;
 			case 39:	//RIGHT
 				unPause()
@@ -291,12 +345,10 @@ var Tetris = function(){
 					}
 				}
 				
-				//clearInterval(interval);
 				for (var i = 0; i < 4; i++){
 					activeP.coord[i][0] = tmpCoord[i][0];
-					activeP.rect[i].transition().delay(to / 8).duration(to / 6).attr("x", activeP.coord[i][0] * sqW).attr("y", activeP.coord[i][1] * sqH);
+					activeP.rect[i].transition().delay(0).duration(to / 6).attr("x", activeP.coord[i][0] * sqW).attr("y", activeP.coord[i][1] * sqH);
 				}
-				//runPiece();
 				break;
 			case 80:	//Pause
 				if (!unPause()){
@@ -324,7 +376,7 @@ var Tetris = function(){
 	function runPiece(timeout){
 		pause = false;
 		clearInterval(interval);
-		if (timeout == undefined) timeout = to;
+		if (timeout == undefined) timeout = to - level * 100;
 		interval = setInterval(function(){
 			
 			var tmpCoord = [];
