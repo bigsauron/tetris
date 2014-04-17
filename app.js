@@ -124,7 +124,7 @@ var Tetris = function(data){
 				.attr("x", i * sqW)
 				.attr("y", k * sqH)
 				.attr("stroke", 'black')
-				.attr("stroke-width", 0.1)
+				.attr("stroke-width", 0.2)
 				.attr("stroke-opacity", 0.3)
 				.attr("fill-opacity", 0)
 				.attr("width", sqW)
