@@ -6,7 +6,7 @@ svg#tetris {
   -ms-user-select: none;
   -o-user-select: none;
   user-select: none;
-  float: left;
+  
 }
 
 body{
@@ -17,4 +17,16 @@ body{
 	padding: 20px 0 0 0;
 	width: 500px;
     margin: 0 auto;
+}
+
+#tetrisC{
+	float: left;
+}
+#rightBox{
+	float: left;
+	width: 200px;
+}
+#scoreBox, #levelBox{
+	padding: 15px 5px 0 20px;
+	font-size: 1.2em;
 }

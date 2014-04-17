@@ -7,14 +7,40 @@
   </head>
   
   <body>
-    <div id="tetrisContainer"></div>
+    <div id="tetrisContainer">
+        <div id="tetrisC"></div>
+        <div id="rightBox">
+            <div id="new_gameC">
+		        <input id="levelInp" name="level" type="range" min="0" max="9" value="0">
+		        <button id="newGameButton" type="button">New Game!</button>
+	        </div>
+	        <div id="previewC"></div>
+	        <div id="scoreBox">Score: <span id="scoreC">0</span></div>
+	        <div id="levelBox">Level: <span id="levelC">0</span></div>
+        </div>
+    </div>
   <script src="http://d3js.org/d3.v3.min.js"></script>
   <script src="app.js"></script>
   
   <script>
   
-  var t = new Tetris('#tetrisContainer');
-  t.main();
+  var t = new Tetris({
+	  parentEl: '#tetrisContainer',
+	  svgParent: '#tetrisC',
+	  svgPreveiwParent: '#previewC',
+	  scoreEl: '#scoreC',
+	  levelEl: '#levelC',
+	  levelInp: '#levelInp',
+	  newGameButton: '#newGameButton',
+	  new_gameC: '#new_gameC'
+  });
+  /*
+  function updateLevel(level){
+	 document.getElementById('levelC').innerHTML = level; 
+  }
+  */
+ // t.start(0);
+  
   </script>
   </body>
 </html>

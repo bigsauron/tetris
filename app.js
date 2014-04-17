@@ -1,10 +1,14 @@
-var Tetris = function(parentEl){
+var Tetris = function(data){
 	/********************************************* DEFINITION ********************************************************************************/
 	var activeP, 
 		active, 
 		pause, 
 		nextP, 
 		svgPreview, 
+		new_gameC, 
+		parentEl = 'body', 
+		svgParent = 'body', 
+		svgPreveiwParent = 'body', 
 		scoreEl, 
 		levelEl, 
 		svg, 
@@ -24,9 +28,9 @@ var Tetris = function(parentEl){
 	
 	var pMat = [];
 	
-	if (parentEl == undefined){
-		parentEl = 'body';
-	}
+	if (data.parentEl) parentEl = data.parentEl;
+	if (data.svgParent) svgParent = data.svgParent;
+	if (data.svgPreveiwParent) svgPreveiwParent = data.svgPreveiwParent;
 	
 	var dispatch = d3.dispatch("finished");
 	
@@ -85,143 +89,152 @@ var Tetris = function(parentEl){
 	figures.push({coord: [[4, 0], [5, 0], [5, 1], [6, 1]],	color: 'red', l: 4, r: 6, b: 1, t: 0, tp:'Z'}); //Z
 	
 	
+	svg = d3.select(svgParent)
+		.append('svg')
+		.attr('id', 'tetris')
+		.attr('width', width)
+		.attr('height', height);
 	
+	svgPreview = d3.select(svgPreveiwParent)
+		.append('svg')
+		.attr('id', 'preview')
+		.attr('width', 130)
+		.attr('height', 70);
+	
+	
+	if (data.scoreEl && undefined != d3.select(data.scoreEl)[0][0]){
+		scoreEl = d3.select(data.scoreEl);
+	} else {
+		scoreEl = d3.select(parentEl)
+			.append('div')
+			.attr('id', 'score');
+	}
+	if (data.levelEl && undefined != d3.select(data.levelEl)[0][0]){
+		levelEl = d3.select(data.levelEl);
+	} else {
+		levelEl = d3.select(parentEl)
+			.append('div')
+			.attr('id', 'level');
+	}
+	
+	
+	for (var i = 0; i < wP; i++){
+		for (var k = 0; k < hP; k++){
+			svg.append("rect")
+				.attr("x", i * sqW)
+				.attr("y", k * sqH)
+				.attr("stroke", 'black')
+				.attr("stroke-width", 0.1)
+				.attr("stroke-opacity", 0.3)
+				.attr("fill-opacity", 0)
+				.attr("width", sqW)
+				.attr("height", sqH);
+		}
+	}
+	
+	if (data.new_gameC){
+		d3.select(data.levelInp).on('change', function(){
+			level = this.value;
+			levelEl.text(level);
+		});
+		d3.select(data.newGameButton).on('click', function(){
+			self.start(level)
+		});
+	}
+	
+	d3.select('body').on('keydown', function(){
+		self.move(d3.event.keyCode);
+	});
+	
+	dispatch.on('finished', function(d,v){
+		clearInterval(interval);
+		
+		var tmpY = [];
+		for (var i = 0; i < 4; i++){
+			pMat[activeP.coord[i][0]][activeP.coord[i][1]] = activeP.rect[i];
+			if (-1 == tmpY.indexOf(activeP.coord[i][1])) tmpY.push(activeP.coord[i][1]);
+		}
+		
+		tmpY.sort(function(a, b){
+			 if (a < b)
+			     return 1;
+			  if (a > b)
+			     return -1;
+			  return 0;
+		});
+		
+		var shift = 0;
+		for(var i = 0; i < tmpY.length; i++){
+			var fill = true;
+			for (var k = 0; k < wP; k++){
+				if (undefined == pMat[k][tmpY[i] + shift]){
+					fill = false;
+					break;
+				}
+			}
+			if (fill){
+				for (var j = 0; j < wP; j++){
+					pMat[j][tmpY[i] + shift].remove();
+				}
+				for (var k = tmpY[i] + shift; k > shift; k--){
+					for (var j = 0; j < wP; j++){
+						if (pMat[j][k - 1]){
+							pMat[j][k - 1].transition().delay(10).duration(20).attr("y", k * sqH);
+							pMat[j][k] = pMat[j][k - 1];
+						} else {
+							pMat[j][k] = undefined;
+							
+						}
+					}
+				}
+				
+				for (var k = 0; k < wP; k++){
+					pMat[k][0] = undefined;
+				}
+				shift++;
+			}
+		}
+		if (shift){
+			var points;
+			switch(shift){
+				case 1:
+					points = 40;
+					break;
+				case 2:
+					points = 100;
+					break;
+				case 3:
+					points = 300;
+					break;
+				case 4:
+					points = 1200;
+					break;
+			}
+			totalCleared += shift;
+			
+			if (totalCleared > (level + 1) * 10){
+				level++;
+				levelEl.text(level);
+			}
+			
+			score += points * (level + 1);
+			scoreEl.text(score);
+		}
+		
+		activeP = {};
+		//Start new piece
+		self.drawP(figures[Math.floor(Math.random() * figures.length)]) && runPiece();
+		
+	});
 	
 	
 	/************************************************** FUNCTIONS *************************************************************************************/
 	
 	/**
-	 * Main function
-	 */
-	this.main = function(){
-		
-		
-		svg = d3.select(parentEl)
-			.append('svg')
-			.attr('id', 'tetris')
-			.attr('width', width)
-			.attr('height', height);
-		
-		svgPreview = d3.select(parentEl)
-			.append('svg')
-			.attr('id', 'preview')
-			.attr('width', 130)
-			.attr('height', 70);
-		scoreEl = d3.select(parentEl)
-			.append('div')
-			.attr('id', 'score');
-		
-		levelEl = d3.select(parentEl)
-			.append('div')
-			.attr('id', 'level');
-			
-		this.resetAll();
-			
-		for (var i = 0; i < wP; i++){
-			for (var k = 0; k < hP; k++){
-				svg.append("rect")
-					.attr("x", i * sqW)
-					.attr("y", k * sqH)
-					.attr("stroke", 'black')
-					.attr("stroke-width", 0.1)
-					.attr("stroke-opacity", 0.3)
-					.attr("fill-opacity", 0)
-					.attr("width", sqW)
-					.attr("height", sqH);
-			}
-		}
-		
-		d3.select('body').on('keydown', function(){
-			self.move(d3.event.keyCode);
-		});
-		
-		dispatch.on('finished', function(d,v){
-			clearInterval(interval);
-			
-			var tmpY = [];
-			for (var i = 0; i < 4; i++){
-				pMat[activeP.coord[i][0]][activeP.coord[i][1]] = activeP.rect[i];
-				if (-1 == tmpY.indexOf(activeP.coord[i][1])) tmpY.push(activeP.coord[i][1]);
-			}
-			
-			tmpY.sort(function(a, b){
-				 if (a < b)
-				     return 1;
-				  if (a > b)
-				     return -1;
-				  return 0;
-			});
-			
-			var shift = 0;
-			for(var i = 0; i < tmpY.length; i++){
-				var fill = true;
-				for (var k = 0; k < wP; k++){
-					if (undefined == pMat[k][tmpY[i] + shift]){
-						fill = false;
-						break;
-					}
-				}
-				if (fill){
-					for (var j = 0; j < wP; j++){
-						pMat[j][tmpY[i] + shift].remove();
-					}
-					for (var k = tmpY[i] + shift; k > shift; k--){
-						for (var j = 0; j < wP; j++){
-							if (pMat[j][k - 1]){
-								pMat[j][k - 1].transition().delay(10).duration(20).attr("y", k * sqH);
-								pMat[j][k] = pMat[j][k - 1];
-							} else {
-								pMat[j][k] = undefined;
-								
-							}
-						}
-					}
-					
-					for (var k = 0; k < wP; k++){
-						pMat[k][0] = undefined;
-					}
-					shift++;
-
-				}
-			}
-			if (shift){
-				var points;
-				switch(shift){
-					case 1:
-						points = 40;
-						break;
-					case 2:
-						points = 100;
-						break;
-					case 3:
-						points = 300;
-						break;
-					case 4:
-						points = 1200;
-						break;
-				}
-				totalCleared += shift;
-				
-				if (totalCleared > (level + 1) * 10){
-					level++;
-					levelEl.text(level);
-				}
-				
-				score += points * (level + 1);
-				scoreEl.text(score);
-			}
-			
-			activeP = {};
-			//Start new piece
-			self.drawP(figures[Math.floor(Math.random() * figures.length)]) && runPiece();
-			
-		});
-	}
-	
-	/**
 	 * reset everything
 	 */
-	this.resetAll = function(){
+	this.start = function(lv){
+		
 		clearInterval(interval);
 		for (var i = 0; i < wP; i++){
 			pMat[i] = new Array(hP);
@@ -230,12 +243,13 @@ var Tetris = function(parentEl){
 		svgPreview.selectAll('rect').remove();
 		nextP = undefined;
 		score = 0;
-	    level = 0;
+	    level = (lv != undefined) ? 1 * lv : 0;
 	    totalCleared = 0;
 	    activeP = {};
 	    scoreEl.text(score);
 	    levelEl.text(level);
 	    active = true;
+	    d3.select(data.new_gameC).style('display', 'none');
 	    this.drawP(figures[Math.floor(Math.random() * figures.length)]) && runPiece();
 	    runPiece();
 	}
@@ -291,6 +305,7 @@ var Tetris = function(parentEl){
 		for (var i = 0; i < f.coord.length; i++){
 			if (pMat[f.coord[i][0]][f.coord[i][1]]){
 				active = false;
+				d3.select(data.new_gameC).style('display', 'block');
 				alert('Game Over');
 				return false;
 			}
@@ -308,7 +323,7 @@ var Tetris = function(parentEl){
 	 */
 	this.move = function(keyCode){
 		
-		if (!activeP.coord) return;
+		//if (!activeP.coord) return;
 		switch (keyCode){
 			case 38:	//UP
 				if (!active) return;
@@ -384,11 +399,20 @@ var Tetris = function(parentEl){
 				}
 				break;
 			case 113:	//F2
-				this.resetAll();
+				if (data.levelInp){
+					var lv = d3.select(data.levelInp).node().value;
+				} else {
+					var lv = 0;
+				}
+				this.start(lv);
 				break;
 		}
 	}
-	
+
+	/**
+	 * remove pause in the game
+	 * @returns boolean true if the game was paused and false if not
+	 */
 	function unPause(){
 		if (pause){
 			runPiece();
@@ -406,7 +430,7 @@ var Tetris = function(parentEl){
 	function runPiece(timeout){
 		pause = false;
 		clearInterval(interval);
-		if (timeout == undefined) timeout = to - level * 100;
+		if (timeout == undefined) timeout = level < 8 ? to - level * (to / 10) : 2 * (to / 10) / (level - 7);
 		interval = setInterval(function(){
 			
 			var tmpCoord = [];
