@@ -13,20 +13,54 @@ body{
 	margin: 0 auto;
 }
 
-#tetrisContainer{
-	padding: 20px 0 0 0;
-	width: 500px;
-    margin: 0 auto;
-}
-
-#tetrisC{
-	float: left;
-}
-#rightBox{
-	float: left;
-	width: 200px;
-}
 #scoreBox, #levelBox{
 	padding: 15px 5px 0 20px;
 	font-size: 1.2em;
+}
+#tetrisContainer.container{
+	max-width: 500px;
+	padding: 0;
+}
+
+#arrows{
+	font-size: 2em;
+}
+#pause span{
+	padding: 20px 0 0 0;
+	cursor: pointer;
+	font-size: 2em;
+}
+#arrows span{
+	cursor: pointer;
+	color: #6666FF;
+}
+#arrow-up{
+	padding: 0 0 20px 0;
+}
+#arrow-down{
+	padding: 20px 0 0 0;
+}
+#arrow-left{
+	padding: 0 30px 0 0;
+}
+#arrow-right{
+	padding: 0 0 0 30px;
+}
+
+div.arrows_c{
+	text-align: center;
+}
+@media (max-width: 500px) {
+	#arrow-up{
+	    padding: 0 0 16px 0;
+	}
+	#arrow-down{
+	    padding: 16px 0 0 0;
+	}
+	#arrow-left{
+	    padding: 0 16px 0 0;
+	}
+	#arrow-right{
+	    padding: 0 0 0 16px;
+	}
 }

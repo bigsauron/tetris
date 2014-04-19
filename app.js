@@ -9,6 +9,11 @@ var Tetris = function(data){
 		parentEl = 'body', 
 		svgParent = 'body', 
 		svgPreveiwParent = 'body', 
+		arrow_up = '#arrow-up',
+		arrow_left = '#arrow-left',
+		arrow_right = '#arrow-right',
+		arrow_down = '#arrow-down',
+		pause_icon = '#pause-icon',
 		scoreEl, 
 		levelEl, 
 		svg, 
@@ -17,14 +22,29 @@ var Tetris = function(data){
 		sqH = 30,
 		wP = 10,
 		hP = 20,
-		width  = sqW * wP,
-	    height = sqH * hP,
+		width,
+	    height,
 	    score,
 	    level,
 	    totalCleared,
 	    to = 1000,
 	    self = this,
 	    figures = [];
+	
+	arrow_up = data.arrow_up ? data.arrow_up : arrow_up;
+	arrow_left = data.arrow_left ? data.arrow_left : arrow_left;
+	arrow_right = data.arrow_right ? data.arrow_right : arrow_right;
+	arrow_down = data.arrow_down ? data.arrow_down : arrow_down;
+	pause_icon = data.pause_icon ? data.pause_icon : pause_icon;
+	
+	if(window.matchMedia('(max-width: 500px)').matches){
+		sqW = 20;
+		sqH = 20;
+	}
+	
+	width  = sqW * wP;
+    height = sqH * hP;
+	
 	
 	var pMat = [];
 	
@@ -133,8 +153,8 @@ var Tetris = function(data){
 	}
 	
 	if (data.new_gameC){
-		d3.select(data.levelInp).on('change', function(){
-			level = this.value;
+		d3.select(data.levelInp).on("change", function(event, ui) {
+			level = d3.select(data.levelInp).node().value;
 			levelEl.text(level);
 		});
 		d3.select(data.newGameButton).on('click', function(){
@@ -142,8 +162,29 @@ var Tetris = function(data){
 		});
 	}
 	
+	
 	d3.select('body').on('keydown', function(){
 		self.move(d3.event.keyCode);
+	});
+	
+	d3.select(arrow_left).on('click', function(){
+		self.move(37);
+	});
+	
+	d3.select(arrow_right).on('click', function(){
+		self.move(39);
+	});
+	
+	d3.select(arrow_up).on('click', function(){
+		self.move(38);
+	});
+	
+	d3.select(arrow_down).on('click', function(){
+		self.move(40);
+	});
+	
+	d3.select(pause_icon).on('click', function(){
+		self.move(80);
 	});
 	
 	dispatch.on('finished', function(d,v){

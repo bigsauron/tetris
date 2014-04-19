@@ -1,24 +1,44 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <title>Tetris</title>
     <link rel="stylesheet" href="app.css">
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap-theme.min.css">
   </head>
   
   <body>
-    <div id="tetrisContainer">
-        <div id="tetrisC"></div>
-        <div id="rightBox">
+    <div class="container" id="tetrisContainer">
+        <div id="tetrisC" class="col-xs-8 col-sm-8 col-md-8 col-lg-8"></div>
+        <div id="rightBox" class="col-xs-4 col-sm-4 col-md-4 col-lg-4">
             <div id="new_gameC">
-		        <input id="levelInp" name="level" type="range" min="0" max="9" value="0">
+            	<div class="ui-field-contain">
+	            	<div data-role="level_slider" id="level_slider">
+		            	<label for="level">Chose Level</label>
+				        <input id="levelInp" name="level" type="range" min="0" max="9" value="0">
+			        </div>
+			    </div>
 		        <button id="newGameButton" type="button">New Game!</button>
 	        </div>
 	        <div id="previewC"></div>
+	         <div id="pause"><span class="glyphicon glyphicon-pause" id="pause-icon"></span></div>
 	        <div id="scoreBox">Score: <span id="scoreC">0</span></div>
 	        <div id="levelBox">Level: <span id="levelC">0</span></div>
+	        <div id="arrows">
+			    <div class="arrows_c"><span class="glyphicon glyphicon-arrow-up" id="arrow-up"></span></div>
+		        <div class="arrows_c">
+			        <span class="glyphicon glyphicon-arrow-left" id="arrow-left"></span>
+				    <span class="glyphicon glyphicon-arrow-right" id="arrow-right"></span>
+			    </div>
+			    <div class="arrows_c"><span class="glyphicon glyphicon-arrow-down" id="arrow-down"></span></div>
+		    </div>
+		   
         </div>
     </div>
+  <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+  <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
   <script src="http://d3js.org/d3.v3.min.js"></script>
   <script src="app.js"></script>
   
@@ -31,15 +51,16 @@
 	  scoreEl: '#scoreC',
 	  levelEl: '#levelC',
 	  levelInp: '#levelInp',
+	  level_slider: '#level_slider',
 	  newGameButton: '#newGameButton',
+	  arrow_up: '#arrow-up',
+	  arrow_left: '#arrow-left',
+	  arrow_right: '#arrow-right',
+	  arrow_down: '#arrow-down',
+	  pause_icon: '#pause-icon',
 	  new_gameC: '#new_gameC'
   });
-  /*
-  function updateLevel(level){
-	 document.getElementById('levelC').innerHTML = level; 
-  }
-  */
- // t.start(0);
+
   
   </script>
   </body>
