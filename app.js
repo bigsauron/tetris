@@ -153,9 +153,8 @@ var Tetris = function(data){
 	}
 	
 	if (data.new_gameC){
-		d3.select(data.levelInp).on("change", function(event, ui) {
-			level = d3.select(data.levelInp).node().value;
-			levelEl.text(level);
+		$(level_slider).on("change", function(event, ui) {
+			level = $(data.levelInp).val();
 		});
 		d3.select(data.newGameButton).on('click', function(){
 			self.start(level)
